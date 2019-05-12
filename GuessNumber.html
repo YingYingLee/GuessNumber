@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Guess Number</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="css/bootstrap-4.3.1-dist/bootstrap.min.css">
+		<style>
+			* {
+				font-family: "Microsoft JhengHei", "Wenquanyi Micro Hei", sans-serif;
+				font-size: 12pt;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="col-sm-12">
+					<p class="display-3 font-weight-bold text-center">猜數字</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
+					<table class="table table-striped" id="result">
+						<thead class="table-dark">
+							<tr>
+								<th>&nbsp;</th>
+								<th>猜</th>
+								<th>結果</th>
+							</tr>
+						</thead>
+						<tbody>
+							
+						</tbody>
+					</table>
+				</div>
+				<div class="col-sm-6">
+					<div class="row">
+						<div class="input-group mb-3">
+							<input type="text" class="form-control" id="guess" placeholder="請輸入不重覆的四位數字">
+							<div class="input-group-append">
+								<button type="button" class="btn btn-danger" id="btnGuess">猜</button>  
+							</div>
+						</div>
+					</div>
+					<div class="row d-flex justify-content-start mb-3">
+						<div class="p-2">
+							<button type="button" class="btn btn-info" id="btnAnswer">看答案</button>
+						</div>
+						<div class="p-2">
+							<button type="button" class="btn btn-info" id="btnReset">新遊戲</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script src="js/jquery-3.3.1.slim.min.js"></script>
+		<script src="js/popper.min.js"></script>
+		<script src="js/bootstrap-4.3.1-dist/bootstrap.min.js"></script>
+		<script>
+			let result = $('#result').find('tbody');
+			let guess = $('#guess');
+			let btnGuess = $('#btnGuess');
+			let btnAnswer = $('#btnAnswer');
+			let btnReset = $('#btnReset');
+		
+			let regex = /^[0-9]{4}$/;
+			let randomNum = [];
+		
+			$(function() {
+				genRandomNum();
+				guess.focus();
+			});
+			
+			guess.keypress(function(event) {
+				let keyCode = event.keyCode ? event.keyCode : event.which;
+				
+				if (keyCode === 13) {
+					btnGuess.click();
+				}
+			});
+			
+			btnGuess.click(function() {
+				let guessNum = $.trim(guess.val());
+				
+				if (guessNum.length > 0) {
+					let legal = true;
+				
+					if (!regex.test(guessNum)) {
+						legal = false;
+					}
+					else {
+						let guessNumArr = Array.from(guessNum);
+					
+						for (let i = 0, j = guessNumArr.length; i < j; i++) {
+						
+							if (i !== j - 1) {
+							
+								for (let m = i + 1; m < j; m++) {
+								
+									if (guessNumArr[i] === guessNumArr[m]) {
+										legal = false;
+										break;
+									}
+								}
+								
+								if (!legal) {
+									break;
+								}
+							}
+						}
+					}
+					
+					if (legal) {
+						result.find('tr').each(function() {
+				
+							if ($(this).hasClass('table-warning')) {
+								result.empty();
+								genRandomNum();
+							}
+						});
+					
+						compare(guessNum);
+					}
+					else {
+						alert("請輸入不重覆的四位數字");
+					}
+				}
+				
+				guess.val('').focus();
+			});
+			
+			btnAnswer.click(function() {
+				let tr = $('<tr class="table-warning">');
+				let td1 = $('<td>&nbsp;</td>');
+				let td2 = $('<td>' + randomNum.join('') + '</td>');
+				let td3 = $('<td>&nbsp;</td>');
+				
+				tr.append(td1).append(td2).append(td3);
+				result.append(tr);
+			});
+			
+			btnReset.click(function() {
+				result.empty();
+				genRandomNum();
+				guess.val('').focus();
+			});
+			
+			function genRandomNum() {
+				let digit = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+				
+				randomNum.length = 0;
+				
+				for (let i = 0; i < 4; i++) {
+					let num = Math.floor(Math.random() * digit.length);
+					
+					randomNum.push(digit[num]);
+					digit.splice(num, 1);
+				}
+			}
+			
+			function compare(guessNum) {
+				let guessArr = Array.from(guessNum);
+				let countA = 0;
+				let countB = 0;
+				
+				for (let i = 0, j = guessArr.length; i < j; i++) {
+					guessArr[i] = parseInt(guessArr[i]);
+					
+					if (guessArr[i] === randomNum[i]) {
+						countA++;
+					}
+					
+					for (let m = 0, n = randomNum.length; m < n; m++) {
+						
+						if (i !== m && guessArr[i] === randomNum[m]) {
+							countB++;
+						}
+					}
+				}
+				
+				if (countA === 4) {
+					btnAnswer.click();
+				}
+				else {
+					let tr = $('<tr>');
+					let td1 = $('<td>' + (result.find('tr').length + 1) + '</td>');
+					let td2 = $('<td>' + guessNum + '</td>');
+					let td3 = $('<td>' + countA + 'A' + countB + 'B' + '</td>');
+				
+					tr.append(td1).append(td2).append(td3);
+					result.append(tr);
+				}
+			}
+		</script>
+	</body>
+</html>
